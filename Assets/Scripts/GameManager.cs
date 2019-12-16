@@ -9,37 +9,48 @@ public class GameManager : MonoBehaviour
     public Question[] questions;
 
     [Header("UI Elements")]
+    public Button startGameButton;
     public Text qestionText;
     public Button[] answerButtons = new Button[3];
     public Text[] answersText = new Text[3]; //3 answer options
     public Image resultImage;
     public Text resultText;
-
-    [Header("Animations")]
-    public Animator gamePanelAnimator;
+    public Text correctAnswersNumberText;
 
     [Header("Graphic")]
     public Sprite rightAnswerSprite;
     public Sprite wrongAnswerSprite;
 
+    [Header("ExternalScript")]
+    public AdsManager adsManager;
+    public AnimationManager animationManager;
+
     private List<Question> possibleQuestions; //unappeared questions that may still fall, but will not be repeated
     private Question currentQuestion;
+    private int correctAnswersNumber;
 
     public void OnClickPlay()
     {
         possibleQuestions = new List<Question>(questions);
+        correctAnswersNumber = 0;
 
         QuestionGenerate();
 
-        StartCoroutine(StartGameAnimation());
+        StartCoroutine(animationManager.StartGameAnimation());
+
+        //Ads part
+        adsManager.ShowBannerAds();
     }
 
     public void OnClickAnswer(int buttomIndex)
     {
-        StartCoroutine(QuestionAndButtonsCloseAnimation());
+        StartCoroutine(animationManager.CloseAnimation());
 
         if (answersText[buttomIndex].text == currentQuestion.answers[0])
         {
+            correctAnswersNumber++;
+            correctAnswersNumberText.text = correctAnswersNumber.ToString();
+
             StartCoroutine(TrueOrFalseAnswer(true));
         }
         else
@@ -50,7 +61,6 @@ public class GameManager : MonoBehaviour
 
     private void QuestionGenerate()
     {
-
         int randQuestionIndex = Random.Range(0, possibleQuestions.Count);
         currentQuestion = possibleQuestions[randQuestionIndex];
         possibleQuestions.RemoveAt(randQuestionIndex);
@@ -82,14 +92,14 @@ public class GameManager : MonoBehaviour
         }
 
 
-        yield return StartCoroutine(ResultImageBlinkAnimation());
+        yield return StartCoroutine(animationManager.BlinkAnimation(resultImage.gameObject));
 
 
         if (answerResult && possibleQuestions.Count > 0)
         {
             QuestionGenerate();
 
-            StartCoroutine(QuestionAndButtonsOpenAnimation());
+            StartCoroutine(animationManager.OpenAnimation());
         }
         else
         {
@@ -100,98 +110,14 @@ public class GameManager : MonoBehaviour
                 //resultText.text = "ВОПРОСЫ ЗАКОНЧИЛИСЬ";
             }
 
-            StartCoroutine(EndGameAnimation());
+            yield return StartCoroutine(animationManager.BlinkAnimation(correctAnswersNumberText.gameObject));
+
+            StartCoroutine(animationManager.EndGameAnimation());
+
+            //Ads part
+            adsManager.HideBannerAd();
+            adsManager.ShowRewardedAds();
         }
-
-        yield break;
-    }
-
-
-
-
-
-    private IEnumerator StartGameAnimation()
-    {
-        gamePanelAnimator.SetTrigger("GetOut");
-        yield return new WaitForSeconds(1f);
-
-        yield return StartCoroutine(QuestionAndButtonsOpenAnimation());
-
-        yield break;
-    }
-
-    private IEnumerator EndGameAnimation()
-    {
-        gamePanelAnimator.SetTrigger("GetIn");
-        yield return new WaitForSeconds(1f);
-
-        yield break;
-    }
-
-    private IEnumerator QuestionAndButtonsOpenAnimation()
-    {
-        if (!qestionText.gameObject.activeSelf)
-            qestionText.gameObject.SetActive(true);
-
-        qestionText.gameObject.GetComponent<Animator>().SetTrigger("Open");
-        yield return new WaitForSeconds(1f);
-
-
-        for (int i = 0; i < answerButtons.Length; i++) //buttons cannot be pressed
-            answerButtons[i].interactable = false;
-
-        for (int i = 0; i < answerButtons.Length; i++)
-        {
-            if (!answerButtons[i].gameObject.activeSelf)
-                answerButtons[i].gameObject.SetActive(true);
-
-            answerButtons[i].gameObject.GetComponent<Animator>().SetTrigger("Open");
-            yield return new WaitForSeconds(1f);
-        }
-
-        for (int i = 0; i < answerButtons.Length; i++) //buttons can be pressed
-            answerButtons[i].interactable = true;
-
-        yield break;
-    }
-
-    private IEnumerator QuestionAndButtonsCloseAnimation()
-    {
-        qestionText.gameObject.GetComponent<Animator>().SetTrigger("Close");
-
-
-        for (int i = 0; i < answerButtons.Length; i++) //buttons cannot be pressed
-            answerButtons[i].interactable = false;
-
-        for (int i = 0; i < answerButtons.Length; i++)
-        {
-            answerButtons[i].gameObject.GetComponent<Animator>().SetTrigger("Close");
-        }
-
-        yield return new WaitForSeconds(.17f);
-
-        yield break;
-    }
-
-    private IEnumerator ResultImageBlinkAnimation()
-    {
-        yield return new WaitForSeconds(.2f);
-
-        if (!resultImage.gameObject.activeSelf)
-            resultImage.gameObject.SetActive(true);
-
-        resultImage.gameObject.GetComponent<Animator>().SetTrigger("Open");
-
-        yield return new WaitForSeconds(1f);
-
-        resultImage.gameObject.GetComponent<Animator>().SetTrigger("Close");
-
-        yield return new WaitForSeconds(1f);
-
-        if (resultImage.gameObject.activeSelf)
-            resultImage.gameObject.SetActive(false);
-
-        yield return new WaitForSeconds(.2f);
 
         yield break;
     }
