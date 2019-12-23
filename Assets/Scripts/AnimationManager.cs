@@ -9,8 +9,6 @@ public class AnimationManager : MonoBehaviour
 
     [Header("UI Elements")]
     public GameObject gamePanel;
-    public Text qestionText;
-    public Button[] answerButtons;
 
     private Animator gamePanelAnimator;
 
@@ -24,7 +22,8 @@ public class AnimationManager : MonoBehaviour
         gamePanelAnimator.SetTrigger("GetOut");
         yield return new WaitForSeconds(1f);
 
-        yield return StartCoroutine(OpenAnimation());
+        yield return StartCoroutine(OpenAnimation(gameManager.questionText.gameObject));
+        yield return StartCoroutine(OpenButtonsAnimation(gameManager.answerButtons));
 
         yield break;
     }
@@ -37,15 +36,19 @@ public class AnimationManager : MonoBehaviour
         yield break;
     }
 
-    public IEnumerator OpenAnimation()
+    public IEnumerator OpenAnimation(GameObject openableObject)
     {
-        if (!qestionText.gameObject.activeSelf)
-            qestionText.gameObject.SetActive(true);
+        if (!openableObject.activeSelf)
+            openableObject.SetActive(true);
 
-        qestionText.gameObject.GetComponent<Animator>().SetTrigger("Open");
+        openableObject.GetComponent<Animator>().SetTrigger("Open");
         yield return new WaitForSeconds(1f);
 
+        yield break;
+    }
 
+    public IEnumerator OpenButtonsAnimation(Button[] answerButtons)
+    {
         for (int i = 0; i < answerButtons.Length; i++) //buttons cannot be pressed
             answerButtons[i].interactable = false;
 
@@ -64,10 +67,17 @@ public class AnimationManager : MonoBehaviour
         yield break;
     }
 
-    public IEnumerator CloseAnimation()
+    public IEnumerator CloseAnimation(GameObject lockableObject)
     {
-        qestionText.gameObject.GetComponent<Animator>().SetTrigger("Close");
+        lockableObject.GetComponent<Animator>().SetTrigger("Close");
 
+        yield return new WaitForSeconds(.17f);
+
+        yield break;
+    }
+
+    public IEnumerator CloseButtonsAnimation(Button[] answerButtons)
+    {
         for (int i = 0; i < answerButtons.Length; i++) //buttons cannot be pressed
             answerButtons[i].interactable = false;
 
