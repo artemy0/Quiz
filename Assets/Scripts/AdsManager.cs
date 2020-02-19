@@ -6,7 +6,7 @@ using UnityEngine.UI;
 
 public class AdsManager : MonoBehaviour
 {
-    void Awake()
+    private void Awake()
     {
         if (!RuntimeManager.IsInitialized())
             RuntimeManager.Init();

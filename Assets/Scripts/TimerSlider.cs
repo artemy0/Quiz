@@ -5,54 +5,48 @@ using UnityEngine.UI;
 
 public class TimerSlider : MonoBehaviour
 {
-    public float fullTime;
-    public GameObject fill;
-    public Color startColor, endColor;
+    public float FullTime;
+    public Image Fill;
+    public Color StartColor, EndColor;
 
-    private bool isRunning;
-    public bool IsTimerRunning
-    {
-        get { return isRunning; }
-    }
-    private bool hasReachedTheEnd;
-    public bool HasTimerReachedTheEnd
-    {
-        get { return hasReachedTheEnd; }
-    }
+    public bool IsTimerRunning { get; private set; }
+    public bool IsTimeOver { get; private set; }
 
-    private Slider slider;
-    private float timeLeft;
+    private float _timeLeft;
+    private Slider _slider;
+    private Color _fillAreaColor;
 
     private void Start()
     {
-        slider = GetComponent<Slider>();
-        slider.maxValue = fullTime;
+        _slider = GetComponent<Slider>();
+
+        _slider.maxValue = FullTime;
     }
 
     private void OnEnable()
     {
-        isRunning = true;
-        hasReachedTheEnd = false;
-        timeLeft = fullTime;
-    }
-
-    private void Update()
-    {
-        timeLeft -= Time.deltaTime;
-        slider.value = timeLeft;
-
-        fill.GetComponent<Image>().color = Color.Lerp(startColor, endColor, (fullTime - timeLeft) / fullTime);
-
-        if (timeLeft <= 0)
-        {
-            hasReachedTheEnd = true;
-            gameObject.SetActive(false);
-        }
+        IsTimerRunning = true;
+        IsTimeOver = false;
+        _timeLeft = FullTime;
     }
 
     private void OnDisable()
     {
-        isRunning = false;
+        IsTimerRunning = false;
+    }
+
+    private void Update()
+    {
+        _timeLeft -= Time.deltaTime;
+        _slider.value = _timeLeft;
+
+        Fill.color = Color.Lerp(StartColor, EndColor, (FullTime - _timeLeft) / FullTime);
+
+        if (_timeLeft <= 0)
+        {
+            IsTimeOver = true;
+            gameObject.SetActive(false);
+        }
     }
 
     public void StopTimerOnClick()

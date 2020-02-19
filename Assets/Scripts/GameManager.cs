@@ -66,7 +66,7 @@ public class GameManager : MonoBehaviour
         DetermineAnswerResult(answerResult);
         yield return StartCoroutine(animationManager.BlinkAnimation(resultImage.gameObject));
 
-        if (questionsManager.possibleQuestionsCount <= 0)
+        if (questionsManager.PossibleQuestionsCount <= 0)
         {
             yield return StartCoroutine(animationManager.BlinkAnimation(questionsAreOverImage.gameObject));
         }
@@ -83,7 +83,7 @@ public class GameManager : MonoBehaviour
 
             yield return StartCoroutine(ShowSecondChance());
 
-            if (!timerSlider.GetComponent<TimerSlider>().HasTimerReachedTheEnd)
+            if (!timerSlider.GetComponent<TimerSlider>().IsTimeOver)
             {
                 adsManager.ShowRewardedAds();
                 yield return new WaitForSeconds(.3f); //Waiting for the launch of advertising
@@ -164,12 +164,4 @@ public class GameManager : MonoBehaviour
         yield return StartCoroutine(animationManager.CloseAnimation(continueGameButton.gameObject));
         continueGameButton.gameObject.SetActive(false);
     }
-}
-
-[System.Serializable]
-public class Question
-{
-    public string question;
-    [Tooltip("1-ый вариант ответа должен быть верным!")]
-    public string[] answers = new string[3]; //3 answer options
 }
