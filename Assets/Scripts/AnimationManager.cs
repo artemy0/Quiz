@@ -20,7 +20,7 @@ public class AnimationManager : MonoBehaviour
     public IEnumerator StartGameAnimation()
     {
         gamePanelAnimator.SetTrigger("GetOut");
-        yield return new WaitForSeconds(1f);
+        yield return StartCoroutine(WaitCurrentAnimationFinish(gamePanelAnimator));
 
         yield return StartCoroutine(OpenAnimation(gameManager.questionText.gameObject));
         yield return StartCoroutine(OpenButtonsAnimation(gameManager.answerButtons));
@@ -31,7 +31,8 @@ public class AnimationManager : MonoBehaviour
     public IEnumerator EndGameAnimation()
     {
         gamePanelAnimator.SetTrigger("GetIn");
-        yield return new WaitForSeconds(1f);
+
+        yield return StartCoroutine(WaitCurrentAnimationFinish(gamePanelAnimator));
 
         yield break;
     }
@@ -42,7 +43,8 @@ public class AnimationManager : MonoBehaviour
             openableObject.SetActive(true);
 
         openableObject.GetComponent<Animator>().SetTrigger("Open");
-        yield return new WaitForSeconds(1f);
+
+        yield return StartCoroutine(WaitCurrentAnimationFinish(openableObject.GetComponent<Animator>()));
 
         yield break;
     }
@@ -58,7 +60,8 @@ public class AnimationManager : MonoBehaviour
                 answerButtons[i].gameObject.SetActive(true);
 
             answerButtons[i].gameObject.GetComponent<Animator>().SetTrigger("Open");
-            yield return new WaitForSeconds(1f);
+
+            yield return StartCoroutine(WaitCurrentAnimationFinish(answerButtons[i].gameObject.GetComponent<Animator>()));
         }
 
         for (int i = 0; i < answerButtons.Length; i++) //buttons can be pressed
@@ -69,9 +72,9 @@ public class AnimationManager : MonoBehaviour
 
     public IEnumerator CloseAnimation(GameObject lockableObject)
     {
-        lockableObject.GetComponent<Animator>().SetTrigger("Close");
-
-        yield return new WaitForSeconds(.17f);
+        Animator lockableObjectAnimator = lockableObject.GetComponent<Animator>();
+        lockableObjectAnimator.SetTrigger("Close");
+        yield return StartCoroutine(WaitCurrentAnimationFinish(lockableObjectAnimator));
 
         yield break;
     }
@@ -93,24 +96,28 @@ public class AnimationManager : MonoBehaviour
 
     public IEnumerator BlinkAnimation(GameObject blinkingUIObject)
     {
-        yield return new WaitForSeconds(.2f);
-
         if (!blinkingUIObject.activeSelf)
             blinkingUIObject.SetActive(true);
 
         blinkingUIObject.GetComponent<Animator>().SetTrigger("Open");
 
-        yield return new WaitForSeconds(1f);
+        yield return StartCoroutine(WaitCurrentAnimationFinish(blinkingUIObject.GetComponent<Animator>()));
 
         blinkingUIObject.GetComponent<Animator>().SetTrigger("Close");
 
-        yield return new WaitForSeconds(1f);
+        yield return StartCoroutine(WaitCurrentAnimationFinish(blinkingUIObject.GetComponent<Animator>()));
 
         if (blinkingUIObject.activeSelf)
             blinkingUIObject.SetActive(false);
 
-        yield return new WaitForSeconds(.2f);
-
         yield break;
     }
+
+    private IEnumerator WaitCurrentAnimationFinish(Animator animator)
+    {
+        yield return new WaitForEndOfFrame(); //ждать окончания кадра чтобы анимация успела воспроизвестись
+
+        yield return new WaitForSeconds(animator.GetCurrentAnimatorStateInfo(0).length);
+    }
+
 }
