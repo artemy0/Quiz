@@ -6,69 +6,65 @@ using UnityEngine;
 public class GameManager : MonoBehaviour
 {
     [Header("UI Elements")]
-    public Button startGameButton;
-    public Text questionText;
-    public Button[] answerButtons;
-    public Text[] answersText = new Text[3]; //3 answer options
-
-    public Image resultImage;
-    public Text resultText;
-    public Text correctAnswersNumberText;
-    public Image questionsAreOverImage;
-
-    public Button continueGameButton;
-    public Slider timerSlider;
+    [SerializeField] private Button StartGameButton;
+    [SerializeField] private Text QuestionText;
+    [SerializeField] private Button[] AnswerButtons;
+    [SerializeField] private Text[] AnswersText = new Text[3]; //3 answer options
+    [SerializeField] private Image ResultImage;
+    [SerializeField] private Text ResultText;
+    [SerializeField] private Text CorrectAnswersNumberText;
+    [SerializeField] private Image QuestionsAreOverImage;
+    [SerializeField] private TimerSlider TimerSlider;
 
     [Header("Graphic")]
-    public Sprite rightAnswerSprite;
-    public Sprite wrongAnswerSprite;
+    [SerializeField] private Sprite RightAnswerSprite;
+    [SerializeField] private Sprite WrongAnswerSprite;
 
     [Header("ExternalScript")]
-    public AdsManager adsManager;
-    public AnimationManager animationManager;
-    public QuestionsManager questionsManager;
+    [SerializeField] private AdsManager AdsManager;
+    [SerializeField] private AnimationManager AnimationManager;
+    [SerializeField] private QuestionsManager QuestionsManager;
 
-    private Question currentQuestion;
-    private int correctAnswersNumber;
-    private bool haveSecondChance;
+    private Question _currentQuestion;
+    private int _correctAnswersNumber;
+    private bool _haveSecondChance;
 
     public void OnClickPlay()
     {
         //Settings
-        startGameButton.interactable = false;
+        StartGameButton.interactable = false;
+        QuestionsManager.RefreshQuestions();
 
-        haveSecondChance = true; //Only once in a game session can you take a second chance
-
-        correctAnswersNumber = 0;
-        correctAnswersNumberText.text = correctAnswersNumber.ToString();
-        questionsManager.RefreshQuestions();
+        _haveSecondChance = true;
+        _correctAnswersNumber = 0;
+        CorrectAnswersNumberText.text = _correctAnswersNumber.ToString();
 
         //UI question
         DetermineQuestion();
-        StartCoroutine(animationManager.StartGameAnimation());
+        AnimationManager.CallStartAnimation(QuestionText, AnswerButtons);
 
         //Ads
-        adsManager.ShowBannerAds();
+        AdsManager.ShowBannerAds();
     }
 
     public void OnClickAnswer(int buttomIndex)
     {
         //UI question
-        StartCoroutine(animationManager.CloseAnimation(questionText.gameObject));
-        StartCoroutine(animationManager.CloseButtonsAnimation(answerButtons));
+        AnimationManager.CallCloseAnimation(QuestionText.gameObject);
+        AnimationManager.CallCloseAnimation(AnswerButtons);
 
         //Answer logic
-        StartCoroutine(TrueOrFalseAnswer(answersText[buttomIndex].text == currentQuestion.answers[0]));
+        StartCoroutine(TrueOrFalseAnswer(AnswersText[buttomIndex].text == _currentQuestion.answers[0]));
     }
 
     private IEnumerator TrueOrFalseAnswer(bool answerResult)
     {
         DetermineAnswerResult(answerResult);
-        yield return StartCoroutine(animationManager.BlinkAnimation(resultImage.gameObject));
+        yield return AnimationManager.CallBlinkAnimation(ResultImage.gameObject);
 
-        if (questionsManager.PossibleQuestionsCount <= 0)
+        if (QuestionsManager.PossibleQuestionsCount <= 0)
         {
-            yield return StartCoroutine(animationManager.BlinkAnimation(questionsAreOverImage.gameObject));
+            yield return AnimationManager.CallBlinkAnimation(QuestionsAreOverImage.gameObject);
         }
         else if (answerResult)
         {
@@ -76,16 +72,16 @@ public class GameManager : MonoBehaviour
 
             yield break;
         }
-        else if (haveSecondChance)
+        else if (_haveSecondChance)
         {
             //
-            haveSecondChance = false;
+            _haveSecondChance = false;
 
-            yield return StartCoroutine(ShowSecondChance());
+            yield return AnimationManager.CallSecondChance(TimerSlider);
 
-            if (!timerSlider.GetComponent<TimerSlider>().IsTimeOver)
+            if (!TimerSlider.GetComponent<TimerSlider>().IsTimeOver)
             {
-                adsManager.ShowRewardedAds();
+                AdsManager.ShowRewardedAds();
                 yield return new WaitForSeconds(.3f); //Waiting for the launch of advertising
 
                 yield return StartCoroutine(ShowNextQuestion());
@@ -95,14 +91,14 @@ public class GameManager : MonoBehaviour
             //
         }
 
-        yield return StartCoroutine(animationManager.BlinkAnimation(correctAnswersNumberText.gameObject));
+        yield return AnimationManager.CallBlinkAnimation(CorrectAnswersNumberText.gameObject);
 
-        yield return StartCoroutine(animationManager.EndGameAnimation());
+        yield return AnimationManager.CallEndAnimation();
 
         //Ads
-        adsManager.HideBannerAd();
+        AdsManager.HideBannerAd();
 
-        startGameButton.interactable = true;
+        StartGameButton.interactable = true;
 
         yield break;
     }
@@ -110,17 +106,17 @@ public class GameManager : MonoBehaviour
     private void DetermineQuestion()
     {
         //Question generation
-        currentQuestion = questionsManager.GenerateUniqueQuestion();
+        _currentQuestion = QuestionsManager.GenerateUniqueQuestion();
 
         //UI display
-        questionText.text = currentQuestion.question;
+        QuestionText.text = _currentQuestion.question;
 
-        List<string> copyAnswers = new List<string>(currentQuestion.answers);
-        for (int i = 0; i < currentQuestion.answers.Length; i++)
+        List<string> copyAnswers = new List<string>(_currentQuestion.answers);
+        for (int i = 0; i < _currentQuestion.answers.Length; i++)
         {
             int randAnswerIndex = Random.Range(0, copyAnswers.Count);
 
-            answersText[i].text = copyAnswers[randAnswerIndex]; //filling UI items 
+            AnswersText[i].text = copyAnswers[randAnswerIndex]; //filling UI items 
 
             copyAnswers.RemoveAt(randAnswerIndex);
         }
@@ -130,16 +126,16 @@ public class GameManager : MonoBehaviour
     {
         if (answerResult)
         {
-            correctAnswersNumber++;
-            correctAnswersNumberText.text = correctAnswersNumber.ToString();
+            _correctAnswersNumber++;
+            CorrectAnswersNumberText.text = _correctAnswersNumber.ToString();
 
-            resultImage.sprite = rightAnswerSprite;
-            resultText.text = "ПРАВИЛЬНЫЙ ОТВЕТ";
+            ResultImage.sprite = RightAnswerSprite;
+            ResultText.text = "ПРАВИЛЬНЫЙ ОТВЕТ";
         }
         else
         {
-            resultImage.sprite = wrongAnswerSprite;
-            resultText.text = "НЕПРАВИЛЬНЫЙ ОТВЕТ";
+            ResultImage.sprite = WrongAnswerSprite;
+            ResultText.text = "НЕПРАВИЛЬНЫЙ ОТВЕТ";
         }
     }
 
@@ -147,21 +143,9 @@ public class GameManager : MonoBehaviour
     {
         DetermineQuestion();
 
-        yield return StartCoroutine(animationManager.OpenAnimation(questionText.gameObject));
-        yield return StartCoroutine(animationManager.OpenButtonsAnimation(answerButtons));
+        yield return AnimationManager.CallOpenAnimation(QuestionText.gameObject);
+        yield return AnimationManager.CallOpenAnimation(AnswerButtons);
 
         yield break;
-    }
-
-    private IEnumerator ShowSecondChance()
-    {
-        yield return StartCoroutine(animationManager.OpenAnimation(continueGameButton.gameObject)); //continueGameButton.gameObject.SetActive(true);
-        timerSlider.gameObject.SetActive(true);
-
-        yield return new WaitWhile(() => { return timerSlider.GetComponent<TimerSlider>().IsTimerRunning; });
-
-        timerSlider.gameObject.SetActive(false);
-        yield return StartCoroutine(animationManager.CloseAnimation(continueGameButton.gameObject));
-        continueGameButton.gameObject.SetActive(false);
     }
 }
