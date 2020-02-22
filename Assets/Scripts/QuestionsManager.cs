@@ -9,9 +9,9 @@ public class QuestionsManager : MonoBehaviour
 
     private List<Question> _possibleQuestions; //unappeared questions that may still fall, but will not be repeated
 
-    public int PossibleQuestionsCount
+    public bool QuestionsAreOver
     {
-        get { return _possibleQuestions.Count; }
+        get { return _possibleQuestions.Count <= 0; }
     }
 
     public void RefreshQuestions()

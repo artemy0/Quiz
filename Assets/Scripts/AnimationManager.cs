@@ -10,22 +10,16 @@ public class AnimationManager : MonoBehaviour
     //когда я создавал эту игру я был зелёным маслёнкам, посмотрел видос на youtube и, собственно, вот. 
     //P.S. знаю что это не оправдание и постараюсь это переделать specially for Artyom from the future.
 
-    [Header("UI Elements")]
-    [SerializeField]private GameObject GamePanel;
-    [SerializeField] private Button ContinueGameButton;
-
     private Animator _gamePanelAnimator;
 
     private void Start()
     {
-        _gamePanelAnimator = GamePanel.GetComponent<Animator>();
-
-
+        _gamePanelAnimator = gameObject.GetComponent<Animator>();
     }
 
-    public Coroutine CallSecondChance(TimerSlider timerSlider)
+    public Coroutine CallSecondChance(Button continueGameButton, TimerSlider timerSlider)
     {
-        return StartCoroutine(SecondChance(timerSlider));
+        return StartCoroutine(SecondChance(continueGameButton, timerSlider));
     }
 
     public Coroutine CallStartAnimation(Text questionText, Button[] answerButtons)
@@ -166,15 +160,15 @@ public class AnimationManager : MonoBehaviour
         yield break;
     }
 
-    private IEnumerator SecondChance(TimerSlider timerSlider)
+    private IEnumerator SecondChance(Button continueGameButton, TimerSlider timerSlider)
     {
-        yield return CallOpenAnimation(ContinueGameButton.gameObject); //continueGameButton.gameObject.SetActive(true);
+        yield return CallOpenAnimation(continueGameButton.gameObject); //continueGameButton.gameObject.SetActive(true);
         timerSlider.gameObject.SetActive(true);
 
         yield return new WaitWhile(() => { return timerSlider.GetComponent<TimerSlider>().IsTimerRunning; });
 
         timerSlider.gameObject.SetActive(false);
-        yield return CallCloseAnimation(ContinueGameButton.gameObject);
-        ContinueGameButton.gameObject.SetActive(false);
+        yield return CallCloseAnimation(continueGameButton.gameObject);
+        continueGameButton.gameObject.SetActive(false);
     }
 }
