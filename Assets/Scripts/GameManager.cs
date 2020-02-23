@@ -6,103 +6,123 @@ using UnityEngine;
 public class GameManager : MonoBehaviour
 {
     [Header("UI Elements")]
-    public Button startGameButton;
-    public Text questionText;
-    public Button[] answerButtons;
-    public Text[] answersText = new Text[3]; //3 answer options
+    [SerializeField] private Button StartGameButton;
+    [SerializeField] private TimerSlider TimerSlider;
 
-    public Image resultImage;
-    public Text resultText;
-    public Text correctAnswersNumberText;
-    public Image questionsAreOverImage;
-
-    public Button continueGameButton;
-    public Slider timerSlider;
-
-    [Header("Graphic")]
-    public Sprite rightAnswerSprite;
-    public Sprite wrongAnswerSprite;
+    [SerializeField] private Text QuestionText;
+    [SerializeField] private Button[] AnswerButtons;
+    [SerializeField] private Text[] AnswersText; //3 answer options
+    [SerializeField] private Image ResultImage;
+    [SerializeField] private Text ResultText;
+    [SerializeField] private Text CorrectAnswersNumberText;
+    [SerializeField] private Image QuestionsAreOverImage;
+    [SerializeField] private Button ContinueGameButton;
 
     [Header("ExternalScript")]
-    public AdsManager adsManager;
-    public AnimationManager animationManager;
-    public QuestionsManager questionsManager;
+    [SerializeField] private AdsManager AdsManager;
+    [SerializeField] private AnimationManager AnimationManager;
+    [SerializeField] private QuestionsManager QuestionsManager;
 
-    private Question currentQuestion;
-    private int correctAnswersNumber;
-    private bool haveSecondChance;
+    [Header("Sprites")]
+    [SerializeField] private Sprite RightAnswerSprite;
+    [SerializeField] private Sprite WrongAnswerSprite;
+
+    private Question _currentQuestion;
+    private int _correctAnswersNumber;
+    private bool _haveSecondChance;
 
     public void OnClickPlay()
     {
         //Settings
-        startGameButton.interactable = false;
-
-        haveSecondChance = true; //Only once in a game session can you take a second chance
-
-        correctAnswersNumber = 0;
-        correctAnswersNumberText.text = correctAnswersNumber.ToString();
-        questionsManager.RefreshQuestions();
+        SetInitialSettings();
 
         //UI question
         DetermineQuestion();
-        StartCoroutine(animationManager.StartGameAnimation());
+
+        //Animation
+        AnimationManager.CallStartAnimation(QuestionText, AnswerButtons);
 
         //Ads
-        adsManager.ShowBannerAds();
+        AdsManager.ShowBannerAds();
     }
 
     public void OnClickAnswer(int buttomIndex)
     {
-        //UI question
-        StartCoroutine(animationManager.CloseAnimation(questionText.gameObject));
-        StartCoroutine(animationManager.CloseButtonsAnimation(answerButtons));
+        //Animation
+        AnimationManager.CallCloseAnimation(QuestionText.gameObject);
+        AnimationManager.CallCloseAnimation(AnswerButtons);
 
         //Answer logic
-        StartCoroutine(TrueOrFalseAnswer(answersText[buttomIndex].text == currentQuestion.answers[0]));
+        StartCoroutine(TrueOrFalseAnswer(AnswersText[buttomIndex].text == _currentQuestion.answers[0]));
+    }
+
+    private void SetInitialSettings()
+    {
+        StartGameButton.interactable = false;
+        QuestionsManager.RefreshQuestions(); //теперь все вопросы снова доступны для выпадения
+
+        _haveSecondChance = true;
+        _correctAnswersNumber = 0;
+    }
+
+    private void SetFinalSettings()
+    {
+        StartGameButton.interactable = true;
     }
 
     private IEnumerator TrueOrFalseAnswer(bool answerResult)
     {
-        DetermineAnswerResult(answerResult);
-        yield return StartCoroutine(animationManager.BlinkAnimation(resultImage.gameObject));
+        DetermineAnswerResult(answerResult); //определяем и выводим вопрос
+        yield return AnimationManager.CallBlinkAnimation(ResultImage.gameObject);
 
-        if (questionsManager.PossibleQuestionsCount <= 0)
+        if (QuestionsManager.QuestionsAreOver)
         {
-            yield return StartCoroutine(animationManager.BlinkAnimation(questionsAreOverImage.gameObject));
+            yield return AnimationManager.CallBlinkAnimation(QuestionsAreOverImage.gameObject);
         }
         else if (answerResult)
         {
             yield return StartCoroutine(ShowNextQuestion());
 
-            yield break;
+            yield break; //if the answer is correct, we go to the next question
         }
-        else if (haveSecondChance)
+        else if (_haveSecondChance)
         {
-            //
-            haveSecondChance = false;
+            _haveSecondChance = false;
 
-            yield return StartCoroutine(ShowSecondChance());
+            yield return AnimationManager.CallSecondChance(ContinueGameButton, TimerSlider);
 
-            if (!timerSlider.GetComponent<TimerSlider>().IsTimeOver)
+            if (!TimerSlider.GetComponent<TimerSlider>().IsTimeOver)
             {
-                adsManager.ShowRewardedAds();
+                AdsManager.ShowRewardedAds();
                 yield return new WaitForSeconds(.3f); //Waiting for the launch of advertising
 
                 yield return StartCoroutine(ShowNextQuestion());
 
-                yield break;
+                yield break; //if the answer is not correct, but the second chance has been used, we go to the next question
             }
-            //
         }
 
-        yield return StartCoroutine(animationManager.BlinkAnimation(correctAnswersNumberText.gameObject));
+        //in the case if the questions ended or we answered incorrectly and we did not have a second chance or we have a second chance but we did not use it, then the test ends
+        yield return AnimationManager.CallBlinkAnimation(CorrectAnswersNumberText.gameObject);
 
-        yield return StartCoroutine(animationManager.EndGameAnimation());
+        yield return AnimationManager.CallEndAnimation();
+
+        //Settings
+        SetFinalSettings();
 
         //Ads
-        adsManager.HideBannerAd();
+        AdsManager.HideBannerAd();
 
-        startGameButton.interactable = true;
+        yield break;
+    }
+
+    private IEnumerator ShowNextQuestion()
+    {
+        DetermineQuestion();
+
+        //Animations
+        yield return AnimationManager.CallOpenAnimation(QuestionText.gameObject);
+        yield return AnimationManager.CallOpenAnimation(AnswerButtons);
 
         yield break;
     }
@@ -110,17 +130,17 @@ public class GameManager : MonoBehaviour
     private void DetermineQuestion()
     {
         //Question generation
-        currentQuestion = questionsManager.GenerateUniqueQuestion();
+        _currentQuestion = QuestionsManager.GenerateUniqueQuestion();
 
         //UI display
-        questionText.text = currentQuestion.question;
+        QuestionText.text = _currentQuestion.question;
 
-        List<string> copyAnswers = new List<string>(currentQuestion.answers);
-        for (int i = 0; i < currentQuestion.answers.Length; i++)
+        List<string> copyAnswers = new List<string>(_currentQuestion.answers);
+        for (int i = 0; i < _currentQuestion.answers.Length; i++)
         {
             int randAnswerIndex = Random.Range(0, copyAnswers.Count);
 
-            answersText[i].text = copyAnswers[randAnswerIndex]; //filling UI items 
+            AnswersText[i].text = copyAnswers[randAnswerIndex]; //filling UI items 
 
             copyAnswers.RemoveAt(randAnswerIndex);
         }
@@ -130,38 +150,17 @@ public class GameManager : MonoBehaviour
     {
         if (answerResult)
         {
-            correctAnswersNumber++;
-            correctAnswersNumberText.text = correctAnswersNumber.ToString();
+            _correctAnswersNumber++;
 
-            resultImage.sprite = rightAnswerSprite;
-            resultText.text = "ПРАВИЛЬНЫЙ ОТВЕТ";
+            ResultImage.sprite = RightAnswerSprite;
+            ResultText.text = "ПРАВИЛЬНЫЙ ОТВЕТ";
         }
         else
         {
-            resultImage.sprite = wrongAnswerSprite;
-            resultText.text = "НЕПРАВИЛЬНЫЙ ОТВЕТ";
+            ResultImage.sprite = WrongAnswerSprite;
+            ResultText.text = "НЕПРАВИЛЬНЫЙ ОТВЕТ";
         }
-    }
 
-    private IEnumerator ShowNextQuestion()
-    {
-        DetermineQuestion();
-
-        yield return StartCoroutine(animationManager.OpenAnimation(questionText.gameObject));
-        yield return StartCoroutine(animationManager.OpenButtonsAnimation(answerButtons));
-
-        yield break;
-    }
-
-    private IEnumerator ShowSecondChance()
-    {
-        yield return StartCoroutine(animationManager.OpenAnimation(continueGameButton.gameObject)); //continueGameButton.gameObject.SetActive(true);
-        timerSlider.gameObject.SetActive(true);
-
-        yield return new WaitWhile(() => { return timerSlider.GetComponent<TimerSlider>().IsTimerRunning; });
-
-        timerSlider.gameObject.SetActive(false);
-        yield return StartCoroutine(animationManager.CloseAnimation(continueGameButton.gameObject));
-        continueGameButton.gameObject.SetActive(false);
+        CorrectAnswersNumberText.text = _correctAnswersNumber.ToString();
     }
 }

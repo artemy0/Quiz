@@ -17,9 +17,9 @@ public class QuestionsManagerEditor : Editor
     {
         base.OnInspectorGUI();
 
-        QuestionsControlButtons();
+        QuestionsControlButtons(); //кнопки
 
-        _newQuestion.question = EditorGUILayout.TextField("Question:", _newQuestion.question);
+        _newQuestion.question = EditorGUILayout.TextField("Question:", _newQuestion.question); //поля для удобного ввода вопроса и ответов
         EditorGUILayout.Space();
         _newQuestion.answers[0] = EditorGUILayout.TextField("Right answer:", _newQuestion.answers[0]);
         _newQuestion.answers[1] = EditorGUILayout.TextField("Wrong answer:", _newQuestion.answers[1]);
@@ -29,7 +29,7 @@ public class QuestionsManagerEditor : Editor
     private void QuestionsControlButtons()
     {
         EditorGUILayout.Space();
-        GUILayout.BeginHorizontal();
+        GUILayout.BeginHorizontal(); //распологаем 2-е кнопки в одном ряду
 
         AddQuestionButton();
         RemoveLastQuestionButton();
@@ -37,7 +37,7 @@ public class QuestionsManagerEditor : Editor
         GUILayout.EndHorizontal();
     }
 
-    private void AddQuestionButton() //я знаю 
+    private void AddQuestionButton()
     {
         if (GUILayout.Button("Add question"))
         {
