@@ -31,32 +31,6 @@ public class GameManager : MonoBehaviour
     private int _correctAnswersNumber;
     private bool _haveSecondChance;
 
-    //private Animator QuestionTextAnimator;
-    //private Animator[] AnswerButtonAnimators;
-    //private Animator ResultImageAnimator;
-    //private Animator CorrectAnswersNumberTextAnimator;
-    //private Animator QuestionsAreOverImageAnimator;
-    //private Animator ContinueGameButtonAnimator;
-
-    //private void Start()
-    //{
-    //    QuestionTextAnimator = QuestionText.GetComponent<Animator>();
-
-    //    AnswerButtonAnimators = new Animator[AnswerButtons.Length];
-    //    for (int i = 0; i < AnswerButtonAnimators.Length; i++)
-    //    {
-    //        AnswerButtonAnimators[i] = AnswerButtons[i].GetComponent<Animator>();
-    //    }
-
-    //    ResultImageAnimator = ResultImage.GetComponent<Animator>();
-
-    //    CorrectAnswersNumberTextAnimator = CorrectAnswersNumberText.GetComponent<Animator>();
-
-    //    QuestionsAreOverImageAnimator = QuestionsAreOverImage.GetComponent<Animator>();
-
-    //    ContinueGameButtonAnimator = ContinueGameButton.GetComponent<Animator>();
-    //}
-
     public void OnClickPlay()
     {
         //Settings
@@ -85,7 +59,7 @@ public class GameManager : MonoBehaviour
     private void SetInitialSettings()
     {
         StartGameButton.interactable = false;
-        QuestionsManager.RefreshQuestions();
+        QuestionsManager.RefreshQuestions(); //теперь все вопросы снова доступны для выпадения
 
         _haveSecondChance = true;
         _correctAnswersNumber = 0;
@@ -98,7 +72,7 @@ public class GameManager : MonoBehaviour
 
     private IEnumerator TrueOrFalseAnswer(bool answerResult)
     {
-        DetermineAnswerResult(answerResult);
+        DetermineAnswerResult(answerResult); //определяем и выводим вопрос
         yield return AnimationManager.CallBlinkAnimation(ResultImage.gameObject);
 
         if (QuestionsManager.QuestionsAreOver)

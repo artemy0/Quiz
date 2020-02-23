@@ -23,7 +23,7 @@ public class TimerSlider : MonoBehaviour
         _slider.maxValue = FullTime;
     }
 
-    private void OnEnable()
+    private void OnEnable() //при активации объекта таймер автоматически начинает отсчёт
     {
         IsTimerRunning = true;
         IsTimeOver = false;
@@ -42,7 +42,7 @@ public class TimerSlider : MonoBehaviour
 
         Fill.color = Color.Lerp(StartColor, EndColor, (FullTime - _timeLeft) / FullTime);
 
-        if (_timeLeft <= 0)
+        if (_timeLeft <= 0) //если время заканчивается это значит не было предпринято действий по остановке таймера, и следовательно всё время вышло
         {
             IsTimeOver = true;
             gameObject.SetActive(false);
@@ -51,6 +51,6 @@ public class TimerSlider : MonoBehaviour
 
     public void StopTimerOnClick()
     {
-        gameObject.SetActive(false);
+        gameObject.SetActive(false); //мы останавливаем таймер, т.е. мы не дожидаемся окончания истечения времени, а значит мы совершили дейсвие (взяли второй шанс)
     }
 }

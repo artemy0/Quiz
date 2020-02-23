@@ -12,7 +12,6 @@ public class AdsManager : MonoBehaviour
             RuntimeManager.Init();
     }
 
-    //show banner ad
     public void ShowBannerAds()
     {
         Advertising.ShowBannerAd(BannerAdPosition.Bottom);
@@ -23,14 +22,12 @@ public class AdsManager : MonoBehaviour
         Advertising.HideBannerAd();
     }
 
-    //show interstital ad
     public void ShowInterstitalAds()
     {
         if (Advertising.IsInterstitialAdReady())
             Advertising.ShowInterstitialAd();
     }
 
-    //show rewarded ad
     public void ShowRewardedAds()
     {
         if (Advertising.IsRewardedAdReady())

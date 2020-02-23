@@ -17,6 +17,7 @@ public class AnimationManager : MonoBehaviour
         _gamePanelAnimator = gameObject.GetComponent<Animator>();
     }
 
+    //публичные методы для вызова анимации
     public Coroutine CallSecondChance(Button continueGameButton, TimerSlider timerSlider)
     {
         return StartCoroutine(SecondChance(continueGameButton, timerSlider));
@@ -57,7 +58,7 @@ public class AnimationManager : MonoBehaviour
         return StartCoroutine(BlinkAnimation(blinkingUIObject));
     }
 
-
+    //приватные методы скрывающие логику анимаций
     private IEnumerator WaitCurrentAnimationFinish(Animator animator)
     {
         yield return new WaitForEndOfFrame(); //ждать окончания кадра чтобы анимация успела воспроизвестись
@@ -66,10 +67,10 @@ public class AnimationManager : MonoBehaviour
 
     private IEnumerator StartAnimation(Text questionText, Button[] answerButtons)
     {
-        _gamePanelAnimator.SetTrigger("GetOut");
+        _gamePanelAnimator.SetTrigger("GetOut"); //появление на сцене заднего фона
         yield return StartCoroutine(WaitCurrentAnimationFinish(_gamePanelAnimator));
 
-        yield return StartCoroutine(OpenAnimation(questionText.gameObject));
+        yield return StartCoroutine(OpenAnimation(questionText.gameObject)); //появление вопроса
         yield return StartCoroutine(OpenAnimation(answerButtons));
 
         yield break;
@@ -77,7 +78,7 @@ public class AnimationManager : MonoBehaviour
 
     private IEnumerator EndAnimation()
     {
-        _gamePanelAnimator.SetTrigger("GetIn");
+        _gamePanelAnimator.SetTrigger("GetIn"); //убираем со сцены задний фон
         yield return StartCoroutine(WaitCurrentAnimationFinish(_gamePanelAnimator));
 
         yield break;
@@ -89,7 +90,7 @@ public class AnimationManager : MonoBehaviour
             openableObject.SetActive(true);
 
         Animator openableObjectAnimator = openableObject.GetComponent<Animator>();
-        openableObjectAnimator.SetTrigger("Open");
+        openableObjectAnimator.SetTrigger("Open"); //аниация появления для объекта
         yield return StartCoroutine(WaitCurrentAnimationFinish(openableObjectAnimator));
 
         yield break;
@@ -106,7 +107,7 @@ public class AnimationManager : MonoBehaviour
                 answerButtons[i].gameObject.SetActive(true);
 
             Animator answerButtonAnimator = answerButtons[i].gameObject.GetComponent<Animator>();
-            answerButtonAnimator.SetTrigger("Open");
+            answerButtonAnimator.SetTrigger("Open"); //аниация появления для кнопок
             yield return StartCoroutine(WaitCurrentAnimationFinish(answerButtonAnimator));
         }
 
@@ -119,7 +120,7 @@ public class AnimationManager : MonoBehaviour
     private IEnumerator CloseAnimation(GameObject lockableObject)
     {
         Animator lockableObjectAnimator = lockableObject.GetComponent<Animator>();
-        lockableObjectAnimator.SetTrigger("Close");
+        lockableObjectAnimator.SetTrigger("Close"); //анимация скрытия объектов
         yield return StartCoroutine(WaitCurrentAnimationFinish(lockableObjectAnimator));
 
         yield break;
@@ -133,7 +134,7 @@ public class AnimationManager : MonoBehaviour
         for (int i = 0; i < answerButtons.Length; i++)
         {
             Animator answerButtonAnimator = answerButtons[i].gameObject.GetComponent<Animator>();
-            answerButtonAnimator.SetTrigger("Close");
+            answerButtonAnimator.SetTrigger("Close"); //анимация скрытия кнопок
         }
 
         yield return new WaitForSeconds(.17f);
@@ -146,7 +147,7 @@ public class AnimationManager : MonoBehaviour
         if (!blinkingUIObject.activeSelf)
             blinkingUIObject.SetActive(true);
 
-        Animator blinkingUIObjectAnimator = blinkingUIObject.GetComponent<Animator>();
+        Animator blinkingUIObjectAnimator = blinkingUIObject.GetComponent<Animator>(); //анимация появления и незамедлительного исчезновения
         blinkingUIObjectAnimator.SetTrigger("Open");
         yield return StartCoroutine(WaitCurrentAnimationFinish(blinkingUIObjectAnimator));
         blinkingUIObjectAnimator.SetTrigger("Close");
