@@ -23,12 +23,39 @@ public class GameManager : MonoBehaviour
     [SerializeField] private AnimationManager AnimationManager;
     [SerializeField] private QuestionsManager QuestionsManager;
 
+    [Header("Sprites")]
     [SerializeField] private Sprite RightAnswerSprite;
     [SerializeField] private Sprite WrongAnswerSprite;
 
     private Question _currentQuestion;
     private int _correctAnswersNumber;
     private bool _haveSecondChance;
+
+    //private Animator QuestionTextAnimator;
+    //private Animator[] AnswerButtonAnimators;
+    //private Animator ResultImageAnimator;
+    //private Animator CorrectAnswersNumberTextAnimator;
+    //private Animator QuestionsAreOverImageAnimator;
+    //private Animator ContinueGameButtonAnimator;
+
+    //private void Start()
+    //{
+    //    QuestionTextAnimator = QuestionText.GetComponent<Animator>();
+
+    //    AnswerButtonAnimators = new Animator[AnswerButtons.Length];
+    //    for (int i = 0; i < AnswerButtonAnimators.Length; i++)
+    //    {
+    //        AnswerButtonAnimators[i] = AnswerButtons[i].GetComponent<Animator>();
+    //    }
+
+    //    ResultImageAnimator = ResultImage.GetComponent<Animator>();
+
+    //    CorrectAnswersNumberTextAnimator = CorrectAnswersNumberText.GetComponent<Animator>();
+
+    //    QuestionsAreOverImageAnimator = QuestionsAreOverImage.GetComponent<Animator>();
+
+    //    ContinueGameButtonAnimator = ContinueGameButton.GetComponent<Animator>();
+    //}
 
     public void OnClickPlay()
     {

@@ -83,8 +83,6 @@ public class AnimationManager : MonoBehaviour
         yield break;
     }
 
-
-
     private IEnumerator OpenAnimation(GameObject openableObject)
     {
         if (!openableObject.activeSelf)
